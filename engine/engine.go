@@ -10,27 +10,28 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var ctx = context.TODO()
+
 // User type is a struct that provides an architecture
 // that allow us cast from bson(format of Mongodb) to json
 // and vice versa.
 type User struct {
-	ObjectID primitive.ObjectID `bson:"_id" json:"_id"`
-	Name       string   `json: "name" bson: "name"`
-	Profession string   `json: "profession" bson: "professsion"`
-	Education []string `json: "education" bson: "education`
-	Experience []string `json: "experience" bson: "experience"`
-	Years_exp  int      `json:  "years_exp" bson: "years_exp"`
-	Languajes  string   `json: "languajes" bson: "languajes"`
-	Residence  string   `json: "residence" bson: "residence"`
-	Image      string   `json: "image" bson: "image"`
-	Link       string   `json: "link" bson: "link"`
+	ObjectID   primitive.ObjectID `bson:"_id" json:"_id"`
+	Name       string             `json: "name" bson: "name"`
+	Profession string             `json: "profession" bson: "professsion"`
+	Education  []string           `json: "education" bson: "education`
+	Experience []string           `json: "experience" bson: "experience"`
+	Years_exp  int                `json:  "years_exp" bson: "years_exp"`
+	Languajes  string             `json: "languajes" bson: "languajes"`
+	Residence  string             `json: "residence" bson: "residence"`
+	Image      string             `json: "image" bson: "image"`
+	Link       string             `json: "link" bson: "link"`
 }
 
 type Userer interface {
@@ -41,7 +42,7 @@ func (user *User) Init() {
 	user.ObjectID = primitive.NewObjectID()
 	user.Name = ""
 	user.Profession = ""
-	user.Education  = append(user.Education, "")
+	user.Education = append(user.Education, "")
 	user.Experience = append(user.Experience, "")
 	user.Years_exp = 0
 	user.Languajes = ""
@@ -50,7 +51,11 @@ func (user *User) Init() {
 	user.Link = ""
 }
 
-func Create() (*mongo.Client, error) {
+// Create - function that creates a new connection with the database
+/*
+ Return: return a pointer to a Client session with mongodb.
+*/
+func Create() *mongo.Client {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		panic(err)
@@ -63,7 +68,7 @@ func Create() (*mongo.Client, error) {
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		panic(err)
 	}
-	return client, err
+	return client
 }
 
 func Add(coll *mongo.Collection, user []User) []byte {
@@ -80,13 +85,14 @@ func Add(coll *mongo.Collection, user []User) []byte {
 	}
 	return response
 }
+
 // GetAll - funtion to return all documents in a database.
 /*
  (*mongo.Collection) coll = pointer to a collection in a mongo database
  (error) err = in success == nil otherwise is error.
- return: a slice of type Movie []Movie and error
+ return: a slice of type User []User and error
 */
-func GetAll(coll *mongo.Collection) ([]User) {
+func GetAll(coll *mongo.Collection) []User {
 	var result []User
 	cursor, err := coll.Find(ctx, bson.D{})
 	if err != nil {
@@ -123,15 +129,16 @@ func getOne(moviesColl *mongo.Collection, link string) User {
 	//}
 	return result
 }
+
 // Update - function to update a document inside of database, return
 // document updated.
 /*
  (*mongo.Collection)coll = pointer to collection in database.
  (string) link = link of the user to edit.
- (User) user_updates = updates to be performed on the given user 
+ (User) user_updates = updates to be performed on the given user
  return: document updated type User
 */
-func Update(coll *mongo.Collection, link string, user_updates User) (string) {
+func Update(coll *mongo.Collection, link string, user_updates User) string {
 	var result User
 	result = getOne(coll, link)
 	user_updates.ObjectID = result.ObjectID

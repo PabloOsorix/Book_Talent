@@ -1,4 +1,4 @@
-module Book_Talent/engine
+module engine
 
 go 1.18
 

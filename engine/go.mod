@@ -1,4 +1,4 @@
-module Booktalent/engine
+module github.com/PabloOsorix/Book_Talent/engine
 
 go 1.18
 

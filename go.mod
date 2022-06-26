@@ -1,3 +1,3 @@
-module github.com/PabloOsorix/Book_Talent
+module Book_Talent
 
 go 1.18

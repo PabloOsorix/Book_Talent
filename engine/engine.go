@@ -71,12 +71,16 @@ func Create() *mongo.Client {
 	return client
 }
 
-func Add(coll *mongo.Collection, user []User) []byte {
-	data := make([]interface{}, 0)
-	for _, value := range user {
-		data = append(data, value)
-	}
-	if _, err := coll.InsertMany(ctx, data); err != nil {
+// New - function that creaate a new register in the database
+/*
+ (*mongo-Collection) coll = Pointer to the user collection in the
+ database.
+ (type User)user = new object of type User with all infomation of the
+ new user to add iin the database.
+ return: Return the object in format Byte
+*/
+func New(coll *mongo.Collection, user User) []byte {
+	if _, err := coll.InsertOne(ctx, user); err != nil {
 		panic(err)
 	}
 	response, err := json.MarshalIndent(user, "", "  ")

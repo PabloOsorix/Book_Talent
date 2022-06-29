@@ -6,16 +6,14 @@ package engine
 import (
 	"context"
 	"errors"
-
-	//	"encoding/json"
 	"fmt"
-	"log"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
+	"log"
+	"os"
 )
 
 var ctx = context.TODO()
@@ -39,6 +37,8 @@ type User struct {
 type Userer interface {
 	Init()
 }
+const USER = os.Getenv("USER_DB")
+const PWD = os.Getenv("USER_PWD")
 
 func (user *User) Init() {
 	user.ObjectID = primitive.NewObjectID()
@@ -58,15 +58,16 @@ func (user *User) Init() {
  Return: return a pointer to a Client session with mongodb.
 */
 func Create() (*mongo.Client, error) {
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	if USER == "" || PWD == "" {
+		log.Fatal("Missing database user or password")
+	}
+	url := fmt.Sprintf(
+		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority", &USER, &PWD)
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
 		panic(err)
 	}
-	//defer func() {
-	//	if err := client.Disconnect(ctx); err != nil {
-	//		panic(err)
-	//	}
-	//}()
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
 		return nil, errors.New(err.Error())
 	}

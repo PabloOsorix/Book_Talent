@@ -19,7 +19,6 @@ import (
 )
 
 var ctx = context.TODO()
-var DATABASE = goEnvVariable("DATABASE")
 var USER = goEnvVariable("USER_DB")
 var PWD = goEnvVariable("USER_PWD")
 
@@ -80,11 +79,8 @@ func Create() (*mongo.Client, error) {
 	if USER == "" || PWD == "" {
 		log.Fatal("Missing database User or Password")
 	}
-	if DATABASE == "" {
-		log.Fatal("Missing database name")
-	}
 	url := fmt.Sprintf(
-		"mongodb+srv://%s:%s@%s.catis.mongodb.net/?retryWrites=true&w=majority", USER, PWD, DATABASE)
+		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority", USER, PWD)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
@@ -103,7 +99,7 @@ func Create() (*mongo.Client, error) {
  fail
 */
 func Collection(client *mongo.Client) (*mongo.Collection, error) {
-	usersColl := client.Database(DATABASE).Collection("users")
+	usersColl := client.Database("booktalent").Collection("users")
 	if usersColl == nil {
 		return nil, errors.New("Collection not found")
 	}

@@ -19,8 +19,8 @@ import (
 )
 
 var ctx = context.TODO()
-var USER = goEnvVariable("USER_DB")
-var PWD = goEnvVariable("USER_PWD")
+var USER = "book_talentdb"
+var PWD = "bookTalent123"
 
 // User type is a struct that provides an architecture
 // that allow us cast from bson(format of Mongodb) to json
@@ -80,7 +80,7 @@ func Create() (*mongo.Client, error) {
 		log.Fatal("Missing database User or Password")
 	}
 	url := fmt.Sprintf(
-		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority&directConnection=true", &USER, &PWD)
+		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority&directConnection=true", USER, PWD)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {

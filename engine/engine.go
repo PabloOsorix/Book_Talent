@@ -80,7 +80,7 @@ func Create() (*mongo.Client, error) {
 		log.Fatal("Missing database User or Password")
 	}
 	url := fmt.Sprintf(
-		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority", USER, PWD)
+		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority&directConnection=true", &USER, &PWD)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {

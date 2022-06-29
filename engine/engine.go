@@ -5,7 +5,9 @@ package engine
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+
+	//	"encoding/json"
 	"fmt"
 	"log"
 
@@ -55,7 +57,7 @@ func (user *User) Init() {
 /*
  Return: return a pointer to a Client session with mongodb.
 */
-func Create() *mongo.Client {
+func Create() (*mongo.Client, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		panic(err)
@@ -66,9 +68,16 @@ func Create() *mongo.Client {
 	//	}
 	//}()
 	if err := client.Ping(ctx, readpref.Primary()); err != nil {
-		panic(err)
+		return nil, errors.New(err.Error())
 	}
-	return client
+	return client, nil
+}
+func Collection(client *mongo.Client) (*mongo.Collection, error) {
+	usersColl := client.Database("myNewDataBase").Collection("users")
+	if usersColl == nil {
+		return nil, errors.New("Collection not found")
+	}
+	return usersColl, nil
 }
 
 // New - function that creaate a new register in the database
@@ -79,15 +88,15 @@ func Create() *mongo.Client {
  new user to add iin the database.
  return: Return the object in format Byte
 */
-func New(coll *mongo.Collection, user User) []byte {
+func New(coll *mongo.Collection, user User) (string, error) {
 	if _, err := coll.InsertOne(ctx, user); err != nil {
-		panic(err)
+		return "", errors.New(err.Error())
 	}
-	response, err := json.MarshalIndent(user, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	return response
+	//response, err := json.MarshalIndent(user, "", "  ")
+	//if err != nil {
+	//	panic(err)
+	//}
+	return user.Name, nil
 }
 
 // GetAll - funtion to return all documents in a database.
@@ -96,7 +105,7 @@ func New(coll *mongo.Collection, user User) []byte {
  (error) err = in success == nil otherwise is error.
  return: a slice of type User []User and error
 */
-func GetAll(coll *mongo.Collection) []User {
+func GetAll(coll *mongo.Collection) ([]User, error) {
 	var result []User
 	cursor, err := coll.Find(ctx, bson.D{})
 	if err != nil {
@@ -106,17 +115,17 @@ func GetAll(coll *mongo.Collection) []User {
 	for cursor.Next(ctx) {
 		var element User
 		if err := cursor.Decode(&element); err != nil {
-			log.Fatal(err)
+			return nil, errors.New(err.Error())
 		}
 		result = append(result, element)
 	}
 	if err != nil {
-		panic(err)
+		return nil, errors.New(err.Error())
 	}
-	return result
+	return result, nil
 }
 
-func getOne(moviesColl *mongo.Collection, link string) User {
+func getOne(moviesColl *mongo.Collection, link string) (*User, error) {
 	var result User
 	var err error
 	err = moviesColl.FindOne(ctx, bson.D{{"link", link}}).Decode(&result)
@@ -125,13 +134,13 @@ func getOne(moviesColl *mongo.Collection, link string) User {
 		panic(err)
 	}
 	if err != nil {
-		panic(err)
+		return nil, errors.New(err.Error())
 	}
 	//jsonData, err := json.MarshalIndent(result, "", "	")
 	//if err != nil {
 	//	panic(err)
 	//}
-	return result
+	return &result, nil
 }
 
 // Update - function to update a document inside of database, return
@@ -142,18 +151,22 @@ func getOne(moviesColl *mongo.Collection, link string) User {
  (User) user_updates = updates to be performed on the given user
  return: document updated type User
 */
-func Update(coll *mongo.Collection, link string, user_updates User) string {
-	var result User
-	result = getOne(coll, link)
+func Update(coll *mongo.Collection, link string, user_updates User) (string, error) {
+	var result *User
+	var err error
+	result, err = getOne(coll, link)
+	if err != nil {
+		return "", errors.New(err.Error())
+	}
 	user_updates.ObjectID = result.ObjectID
 	if link == "" {
 		log.Fatal("link is missing")
 	}
 	filter := bson.M{"link": link}
 	if _, err := coll.ReplaceOne(ctx, filter, user_updates); err != nil {
-		panic(err)
+		return "", errors.New(err.Error())
 	}
-	return "Update successfull"
+	return "Update successfull", nil
 }
 
 // Delete - function to delete a document of the mongo database by its _id
@@ -162,13 +175,13 @@ func Update(coll *mongo.Collection, link string, user_updates User) string {
  (string) id = id of element to delete
  return: number of documents delete otherwise 0.
 */
-func Delete(coll *mongo.Collection, link string) string {
+func Delete(coll *mongo.Collection, link string) (string, error) {
 	filter := bson.M{"link": link}
 	_, err := coll.DeleteOne(ctx, filter)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
-	return "{}"
+	return "record was deleted {}", nil
 }
 
 // Disconnect - function to close connection with mongo database.

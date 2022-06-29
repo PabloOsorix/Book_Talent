@@ -80,6 +80,9 @@ func Create() (*mongo.Client, error) {
 	if USER == "" || PWD == "" {
 		log.Fatal("Missing database User or Password")
 	}
+	if DATABASE == "" {
+		log.Fatal("Missing database name")
+	}
 	url := fmt.Sprintf(
 		"mongodb+srv://%s:%s@%s.catis.mongodb.net/?retryWrites=true&w=majority", USER, PWD, DATABASE)
 

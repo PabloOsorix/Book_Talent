@@ -19,8 +19,9 @@ import (
 )
 
 var ctx = context.TODO()
-var USER = "book_talentdb"
-var PWD = "bookTalent123"
+var USER = goEnvVariable("USER_DB")
+var PWD = goEnvVariable("USER_PWD")
+var DATABASE = goEnvVariable("DATABASE")
 
 // User type is a struct that provides an architecture
 // that allow us cast from bson(format of Mongodb) to json
@@ -80,7 +81,7 @@ func Create() (*mongo.Client, error) {
 		log.Fatal("Missing database User or Password")
 	}
 	url := fmt.Sprintf(
-		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority&directConnection=true", USER, PWD)
+		"mongodb+srv://%v:%v@%v.catis.mongodb.net/?retryWrites=true&w=majority", USER, PWD, DATABASE)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
@@ -157,8 +158,8 @@ func getOne(moviesColl *mongo.Collection, link string) (*User, error) {
 	err = moviesColl.FindOne(ctx, bson.D{{"link", link}}).Decode(&result)
 	if err == mongo.ErrNoDocuments {
 		fmt.Printf("No document was found with the link %s\n", link)
-		panic(err)
 	}
+	panic(err)
 	if err != nil {
 		return nil, errors.New(err.Error())
 	}

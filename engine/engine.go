@@ -7,18 +7,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"log"
-	"os"
 )
 
 var ctx = context.TODO()
-var USER = os.Getenv("USER_DB")
-var PWD = os.Getenv("USER_PWD")
+var DATABASE = goEnvVariable("DATABASE")
+var USER = goEnvVariable("USER_DB")
+var PWD = goEnvVariable("USER_PWD")
+
 // User type is a struct that provides an architecture
 // that allow us cast from bson(format of Mongodb) to json
 // and vice versa.
@@ -38,6 +42,7 @@ type User struct {
 type Userer interface {
 	Init()
 }
+
 func (user *User) Init() {
 	user.ObjectID = primitive.NewObjectID()
 	user.Name = ""
@@ -51,16 +56,32 @@ func (user *User) Init() {
 	user.Link = ""
 }
 
+// goEnvVariable - Function to obtain enviroment variables
+/*
+ (string) key - variable to find in the file .env
+ return: key in success.
+*/
+func goEnvVariable(key string) string {
+
+	// load .env file
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
+}
+
 // Create - function that creates a new connection with the database
 /*
  Return: return a pointer to a Client session with mongodb.
 */
 func Create() (*mongo.Client, error) {
 	if USER == "" || PWD == "" {
-		log.Fatal("Missing database user or password")
+		log.Fatal("Missing database User or Password")
 	}
 	url := fmt.Sprintf(
-		"mongodb+srv://%s:%s@booktalent.catis.mongodb.net/?retryWrites=true&w=majority", &USER, &PWD)
+		"mongodb+srv://%s:%s@%s.catis.mongodb.net/?retryWrites=true&w=majority", &USER, &PWD, &DATABASE)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
@@ -71,8 +92,15 @@ func Create() (*mongo.Client, error) {
 	}
 	return client, nil
 }
+
+// Collection - function to connect with collection users in database
+/*
+ (*mongo.Client) client - pointer to the sopen session with mongodb
+ return: pointer to a collection in db in success or error in case of
+ fail
+*/
 func Collection(client *mongo.Client) (*mongo.Collection, error) {
-	usersColl := client.Database("myNewDataBase").Collection("users")
+	usersColl := client.Database(DATABASE).Collection("users")
 	if usersColl == nil {
 		return nil, errors.New("Collection not found")
 	}

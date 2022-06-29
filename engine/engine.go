@@ -37,8 +37,8 @@ type User struct {
 type Userer interface {
 	Init()
 }
-const USER = os.Getenv("USER_DB")
-const PWD = os.Getenv("USER_PWD")
+var USER = os.Getenv("USER_DB")
+var PWD = os.Getenv("USER_PWD")
 
 func (user *User) Init() {
 	user.ObjectID = primitive.NewObjectID()

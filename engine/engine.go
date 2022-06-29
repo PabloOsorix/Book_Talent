@@ -17,7 +17,8 @@ import (
 )
 
 var ctx = context.TODO()
-
+var USER = os.Getenv("USER_DB")
+var PWD = os.Getenv("USER_PWD")
 // User type is a struct that provides an architecture
 // that allow us cast from bson(format of Mongodb) to json
 // and vice versa.
@@ -37,9 +38,6 @@ type User struct {
 type Userer interface {
 	Init()
 }
-var USER = os.Getenv("USER_DB")
-var PWD = os.Getenv("USER_PWD")
-
 func (user *User) Init() {
 	user.ObjectID = primitive.NewObjectID()
 	user.Name = ""

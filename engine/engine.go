@@ -4,12 +4,14 @@
 package engine
 
 import (
+	"Book_talent/user_model"
 	"context"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/PabloOsorix/Book_Talent/user_model"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,55 +24,9 @@ var ctx = context.TODO()
 var USER = goEnvVariable("USER_DB")
 var PWD = goEnvVariable("USER_PWD")
 var DATABASE = goEnvVariable("DATABASE")
+type User = user_model.User
 
-// User type is a struct that provides an architecture
-// that allow us cast from bson(format of Mongodb) to json
-// and vice versa.
-type User struct {
-	ObjectID   primitive.ObjectID `bson:"_id" json:"_id"`
-	Name       string             `json: "name" bson: "name"`
-	Profession string             `json: "profession" bson: "professsion"`
-	Education  []string           `json: "education" bson: "education`
-	Experience []string           `json: "experience" bson: "experience"`
-	Years_exp  int                `json:  "years_exp" bson: "years_exp"`
-	Languajes  string             `json: "languajes" bson: "languajes"`
-	Residence  string             `json: "residence" bson: "residence"`
-	Image      string             `json: "image" bson: "image"`
-	Link       string             `json: "link" bson: "link"`
-}
 
-type Userer interface {
-	Init()
-}
-
-func (user *User) Init() {
-	user.ObjectID = primitive.NewObjectID()
-	user.Name = ""
-	user.Profession = ""
-	user.Education = append(user.Education, "")
-	user.Experience = append(user.Experience, "")
-	user.Years_exp = 0
-	user.Languajes = ""
-	user.Residence = ""
-	user.Image = ""
-	user.Link = ""
-}
-
-// goEnvVariable - Function to obtain enviroment variables
-/*
- (string) key - variable to find in the file .env
- return: key in success.
-*/
-func goEnvVariable(key string) string {
-
-	// load .env file
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
-	return os.Getenv(key)
-}
 
 // Create - function that creates a new connection with the database
 /*
@@ -152,24 +108,6 @@ func GetAll(coll *mongo.Collection) ([]User, error) {
 	return result, nil
 }
 
-func getOne(moviesColl *mongo.Collection, link string) (*User, error) {
-	var result User
-	var err error
-	err = moviesColl.FindOne(ctx, bson.D{{"link", link}}).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		fmt.Printf("No document was found with the link %s\n", link)
-	}
-	panic(err)
-	if err != nil {
-		return nil, errors.New(err.Error())
-	}
-	//jsonData, err := json.MarshalIndent(result, "", "	")
-	//if err != nil {
-	//	panic(err)
-	//}
-	return &result, nil
-}
-
 // Update - function to update a document inside of database, return
 // document updated.
 /*
@@ -179,19 +117,25 @@ func getOne(moviesColl *mongo.Collection, link string) (*User, error) {
  return: document updated type User
 */
 func Update(coll *mongo.Collection, link string, user_updates User) (string, error) {
-	var result *User
-	var err error
-	result, err = getOne(coll, link)
-	if err != nil {
-		return "", errors.New(err.Error())
-	}
-	user_updates.ObjectID = result.ObjectID
+	
 	if link == "" {
 		log.Fatal("link is missing")
 	}
 	filter := bson.M{"link": link}
-	if _, err := coll.ReplaceOne(ctx, filter, user_updates); err != nil {
+
+	result, err := getID(coll, link)
+	if err != nil {
 		return "", errors.New(err.Error())
+	}
+
+	user_updates.ObjectID = result
+	_, err = coll.DeleteOne(ctx, filter)
+	if err != nil {
+		return "Record not Found!", errors.New(err.Error())
+	}
+
+	if _, err := coll.InsertOne(ctx, user_updates); err != nil {
+		return "Record could'n update", errors.New(err.Error())
 	}
 	return "Update successfull", nil
 }
@@ -219,8 +163,52 @@ func Delete(coll *mongo.Collection, link string) (string, error) {
 func Disconnect(client *mongo.Client) error {
 	if err := client.Disconnect(context.Background()); err != nil {
 		panic(err)
-		return err
+		return "", err
 	}
 
 	return nil
+}
+
+
+
+/*--------LOCAL PACKAGE FUNCTIONS-----------*/
+
+
+// getID - Local package function to obtain the id of an existing user in
+// the database. (is used by Update function)
+/*
+ (*mongo.Collection) coll = pointer to the collection users of the database
+ (string) link = link to find the user to update
+ return: primitive.ObjectID = id of existing user, in case of fail return
+ an error
+*/
+func getID(coll *mongo.Collection, link string) (primitive.ObjectID, error) {
+	var result User
+	var err error
+	err = coll.FindOne(ctx, bson.D{{"link", link}}).Decode(&result)
+	if err != nil {
+		log.Fatal(errors.New(err.Error()))
+	}
+	//jsonData, err := json.MarshalIndent(result, "", "	")
+	//if err != nil {
+	//	panic(err)
+	//}
+	return result.ObjectID, nil
+}
+
+// goEnvVariable - Local package function to obtain 
+// enviroment variables
+/*
+ (string) key - variable to find in the file .env
+ return: key in success.
+*/
+func goEnvVariable(key string) string {
+
+	// load .env file
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	return os.Getenv(key)
 }

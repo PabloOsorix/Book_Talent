@@ -4,14 +4,13 @@
 package engine
 
 import (
-	"Book_talent/user_model"
 	"context"
 	"errors"
 	"fmt"
 	"log"
 	"os"
 
-	//"github.com/PabloOsorix/Book_Talent/user_model"
+	"github.com/PabloOsorix/Book_Talent/user_model"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -163,7 +162,7 @@ func Delete(coll *mongo.Collection, link string) (string, error) {
 func Disconnect(client *mongo.Client) error {
 	if err := client.Disconnect(context.Background()); err != nil {
 		panic(err)
-		return "", err
+		return err
 	}
 
 	return nil

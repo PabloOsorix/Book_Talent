@@ -1,0 +1,26 @@
+PUT   http://localhost:5000/api/bot  HTTP/1.1
+Content-type: application/json
+
+{
+    "name": "Juan David Avila Caycedo",
+    "profession":"Desarrollador de front-end",
+    "education": [
+        {"collague": "Holberton School", 
+        "title": "Computer Science and Maching learning", 
+        "period": "2021 - dic 2022"}, 
+        {"collague": "Holberton School", 
+        "title": "Computer Software Engineering", 
+        "period": "2020 - 2021"}], 
+    "experience": [
+        {"title": "Software Engineer Mentor | full Stack Mentor remote", 
+        "company": "Holberton School Colombia",
+        "time": "2 meses"},
+        {"title": "Back end Developer | remote",
+        "company": "Lapislazuli CP",
+        "time":"4 años"}],
+    "years_exp": 4,
+    "Residence": "Bogotá, Distrito Capital, Colombia",
+    "image": "https://mediaexp2.licdn.com/dms/image/D4D35AQGN1AN2aWeehA/profile-framedphoto-shrink_800_800/0/1650266316849?e=1656986400&v=beta&t=df2cgX18DWMxB8zfQqKHY1GJQyxSd-2JTsPznPY15Ok",
+    "link": "https://www.linkedin.com/in/juandac/", 
+    "Languajes": "Spanish, English"
+}

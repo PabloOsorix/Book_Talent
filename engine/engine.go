@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/PabloOsorix/Book_Talent/user_model"
+	//"github.com/PabloOsorix/Book_Talent/user_model"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"

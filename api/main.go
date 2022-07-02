@@ -1,11 +1,9 @@
 package main
 
 import (
-	"Book_talent/engine"
 	"log"
-
-	//"github.com/PabloOsorix/Book_Talent/user_model"
-	"github.com/PabloOsorix/Book_Talent/engine"
+	"Book_talent/engine"
+	//"github.com/PabloOsorix/Book_Talent/engine"
 
 	"net/http"
 
